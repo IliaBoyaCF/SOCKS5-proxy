@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SOCKS5-proxy": {
+      "commandName": "Project",
+      "commandLineArgs": "30000"
+    }
+  }
+}

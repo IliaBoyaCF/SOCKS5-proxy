@@ -17,7 +17,7 @@ public class ClientNegotiationRequest : Message
 
     private static readonly int _headerFieldsCount = 2;
 
-    public ReadOnlyCollection<NegotiationMethod> NegotiationMethods { get => _negotiationMethods.AsReadOnly(); };
+    public ReadOnlyCollection<NegotiationMethod> NegotiationMethods { get => _negotiationMethods.AsReadOnly(); }
 
     private List<NegotiationMethod> _negotiationMethods = [];
 

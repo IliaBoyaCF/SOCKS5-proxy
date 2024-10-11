@@ -10,7 +10,7 @@ public class MessageParser
         List<ClientNegotiationRequest.NegotiationMethod> negotiationMethods = [];
         for (int i = 0; i < bytes[1]; ++i)
         {
-            negotiationMethods[0] = (ClientNegotiationRequest.NegotiationMethod)bytes[i + 2];
+            negotiationMethods.Add((ClientNegotiationRequest.NegotiationMethod)bytes[i + 2]);
         }
         return new ClientNegotiationRequest(negotiationMethods);
     }
@@ -27,25 +27,41 @@ public class MessageParser
 
         ClientRequest.AddressType addressType = (ClientRequest.AddressType)bytes[3];
         IPAddress address;
-        int port;
+        int port = 0;
         switch (addressType)
         {
             case ClientRequest.AddressType.IPv4:
-                address = new(new ArraySegment<byte>(bytes, 4, 4).AsSpan().ToArray());
-                port = BitConverter.ToInt16(bytes, 8);
+                address = new(new ArraySegment<byte>(bytes, 4, 4).ToArray());
+                port = ParsePort(bytes, 8);
                 return new ClientRequest((ClientRequest.Command)bytes[1], address, port);
 
             case ClientRequest.AddressType.IPv6:
-                address = new(new ArraySegment<byte>(bytes, 4, 8).AsSpan().ToArray());
-                port = BitConverter.ToInt16(bytes, 12);
+                address = new(new ArraySegment<byte>(bytes, 4, 16).AsSpan().ToArray());
+                port = ParsePort(bytes, 12);
                 return new ClientRequest((ClientRequest.Command)bytes[1], address, port);
             case ClientRequest.AddressType.DOMAIN_NAME:
-                string domainName = new(new ArraySegment<byte>(bytes, 5, bytes[4]).ToString());
-                port = BitConverter.ToInt16(bytes, 5 + bytes[4]);
+                string domainName = System.Text.Encoding.UTF8.GetString(new ArraySegment<byte>(bytes, 5, bytes[4]).ToArray());
+                Console.WriteLine("Request to connect to site with '{0}' domain name.", domainName);
+                port = ParsePort(bytes, 5 + bytes[4]);
                 return new ClientRequest((ClientRequest.Command)bytes[1], domainName, port);
             default:
                 throw new ArgumentException("Invalid address type.");
         }
+    }
+
+    private static int ParsePort(byte[] bytes, int startingIndex)
+    {
+        int port;
+        byte[] portBytes = new ArraySegment<byte>(bytes, startingIndex, 2).ToArray();
+
+        if (!BitConverter.IsLittleEndian)
+        {
+            return BitConverter.ToUInt16(portBytes, 0);
+        }
+
+        (portBytes[1], portBytes[0]) = (portBytes[0], portBytes[1]);
+        port = BitConverter.ToUInt16(portBytes, 0);
+        return port;
     }
 
     public static ServerReply ParseServerReply(byte[] bytes)

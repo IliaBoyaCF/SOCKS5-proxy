@@ -36,6 +36,8 @@ public class ClientRequest : Message
             throw new ArgumentException("Host name is too long.");
         }
 
+        SelectedAddressType = AddressType.DOMAIN_NAME;
+
         Address = hostName;
         Port = hostPort;
 
@@ -69,6 +71,8 @@ public class ClientRequest : Message
             default:
                 throw new ArgumentException("Unsupported address family");
         }
+
+        SelectedAddressType = addressType;
 
         arrayBufferWriter.Write([VER_FIELD, (byte)command, RSV_FIELD, (byte)addressType]);
         arrayBufferWriter.Write(hostAddress.GetAddressBytes());
