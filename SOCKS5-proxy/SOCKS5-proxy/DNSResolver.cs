@@ -9,7 +9,6 @@ public class DNSResolver
 {
 
     private static DNSResolver _instance;
-    private static int s_defaultTTL;
     private EndPoint s_dnsServerEndPoint = new IPEndPoint(IPAddress.Parse("8.8.8.8"), 53);
 
     public static DNSResolver Instance
@@ -23,7 +22,7 @@ public class DNSResolver
 
     public delegate void OnResolve(IList<IResourceRecord> hostAddresses);
 
-    private record DnsRequest(string address, OnResolve onResolve);
+    private record DnsRequest(string Address, OnResolve OnResolveAction);
 
     private readonly Socket _socket;
     private readonly Queue<DnsRequest> _requests = [];
@@ -58,7 +57,7 @@ public class DNSResolver
             _cache.Add(resolvedDomainName, response.AnswerRecords);
         }
 
-        _waitingReply.GetValueOrDefault(resolvedDomainName)?.onResolve(response.AnswerRecords);
+        _waitingReply.GetValueOrDefault(resolvedDomainName)?.OnResolveAction(response.AnswerRecords);
 
         _waitingReply.Remove(resolvedDomainName);
 
@@ -79,7 +78,7 @@ public class DNSResolver
 
     private void SendRequest(DnsRequest dnsRequest)
     {
-        List<Question> questions = [new Question(Domain.FromString(dnsRequest.address), RecordType.A, RecordClass.IN)];
+        List<Question> questions = [new Question(Domain.FromString(dnsRequest.Address), RecordType.A, RecordClass.IN)];
         Request request = new(new Header(), questions, [])
         {
             RecursionDesired = true,
@@ -97,12 +96,5 @@ public class DNSResolver
             return;
         }
         _requests.Enqueue(new DnsRequest(hostName, onResolve));
-        //if (_requests.Count == 1)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
-
-
-
 }

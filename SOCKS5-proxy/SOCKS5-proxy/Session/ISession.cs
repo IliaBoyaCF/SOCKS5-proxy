@@ -1,6 +1,6 @@
 ﻿namespace SOCKS5_proxy.Session;
 
-public interface ISession : IDisposable, IWritableHandler, IReadableHandler
+public interface ISession : IDisposable
 {
     public StateType State { get; }
 

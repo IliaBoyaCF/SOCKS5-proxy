@@ -174,7 +174,6 @@ public class Selector : ISubscibableSelector
         if (!IsAttached(socket))
         {
             return;
-            //throw new InvalidOperationException("Socket must be attached to call detach.");
         }
         ISubscibableSelector.SelectableType type = GetAttachedType(socket);
         _handlersBySocket.Remove(socket);

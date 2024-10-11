@@ -110,7 +110,7 @@ public abstract class SessionState
         }
     }
 
-    public abstract void HandleRead(Socket readableSocket);
+    //public abstract void HandleRead(Socket readableSocket);
 
-    public abstract void HandleWrite(Socket writableSocket);
+    //public abstract void HandleWrite(Socket writableSocket);
 }

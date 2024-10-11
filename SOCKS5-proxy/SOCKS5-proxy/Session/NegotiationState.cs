@@ -1,5 +1,4 @@
 ﻿using SOCKS5_proxy.Protocol;
-using System;
 using System.Net.Sockets;
 
 namespace SOCKS5_proxy.Session;
@@ -58,15 +57,5 @@ internal class NegotiationState : SessionState
                     }
                     _session.SetState(new RequestAcceptState(_session, _clientSocket, _selector));
                 });
-    }
-
-    public override void HandleRead(Socket readableSocket)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void HandleWrite(Socket writableSocket)
-    {
-        throw new NotImplementedException();
     }
 }

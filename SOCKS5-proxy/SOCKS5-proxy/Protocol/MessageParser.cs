@@ -41,7 +41,6 @@ public class MessageParser
                 return new ClientRequest((ClientRequest.Command)bytes[1], address, port);
             case ClientRequest.AddressType.DOMAIN_NAME:
                 string domainName = System.Text.Encoding.UTF8.GetString(new ArraySegment<byte>(bytes, 5, bytes[4]).ToArray());
-                Console.WriteLine("Request to connect to site with '{0}' domain name.", domainName);
                 port = ParsePort(bytes, 5 + bytes[4]);
                 return new ClientRequest((ClientRequest.Command)bytes[1], domainName, port);
             default:

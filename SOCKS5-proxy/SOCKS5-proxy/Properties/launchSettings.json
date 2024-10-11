@@ -3,6 +3,13 @@
     "SOCKS5-proxy": {
       "commandName": "Project",
       "commandLineArgs": "30000"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "-h"
+    },
+    "NoArgs": {
+      "commandName": "Project"
     }
   }
 }

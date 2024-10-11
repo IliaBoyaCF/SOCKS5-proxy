@@ -11,12 +11,6 @@ internal class DataTransferringState : SessionState
 
     public DataTransferringState(Socket clientSocket, Socket hostSocket, ISubscibableSelector selector, SessionImplementation session)
     {
-        int tmp = clientSocket.Available;
-        if (session.State == ISession.StateType.CLOSED)
-        {
-            throw new InvalidOperationException("Can't set transferring state when session is closed.");
-        }
-        Console.WriteLine("Session is set to data transferring state.");
         _clientSocket = clientSocket;
         _hostSocket = hostSocket;
         _selector = selector;
@@ -25,7 +19,7 @@ internal class DataTransferringState : SessionState
         _selector.AttachSelectable(_clientSocket, (ISubscibableSelector.ReadableHandler)HandleRead);
     }
 
-    public override void HandleRead(Socket readableSocket)
+    private void HandleRead(Socket readableSocket)
     {
         Socket destSocket = _hostSocket;
         if (readableSocket == _hostSocket)
@@ -34,7 +28,8 @@ internal class DataTransferringState : SessionState
         }
         if (_selector.IsAttached(destSocket))
         {
-            if (_selector.GetAttachedType(destSocket) == ISubscibableSelector.SelectableType.WRITEABLE || _selector.GetAttachedType(destSocket) == ISubscibableSelector.SelectableType.READ_WRITABLE)
+            if (_selector.GetAttachedType(destSocket) == ISubscibableSelector.SelectableType.WRITEABLE || 
+                _selector.GetAttachedType(destSocket) == ISubscibableSelector.SelectableType.READ_WRITABLE)
             {
                 return;
             }
@@ -50,16 +45,6 @@ internal class DataTransferringState : SessionState
             _session.SetClosed();
             return;
         }
-        try
-        {
-            int tmp = destSocket.Available;
-        }
-        catch (ObjectDisposedException)
-        {
-            _session.SetClosed();
-            return;
-        }
-        
         new NonBlockingWriter(destSocket, _selector, bytes, (e) => {
             if (e != null)
             {
@@ -67,10 +52,5 @@ internal class DataTransferringState : SessionState
                 return;
             }
         });
-    }
-
-    public override void HandleWrite(Socket writableSocket)
-    {
-        throw new NotImplementedException();
     }
 }

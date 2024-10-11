@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace SOCKS5_proxy;
 
-public class Server : IDisposable, IWritableHandler
+public class Server : IDisposable
 {
     public static readonly int s_defaultTimeout = 1_000; // microseconds, which is 1 millisecond
     
@@ -32,7 +32,14 @@ public class Server : IDisposable, IWritableHandler
 
     public void Start()
     {
-        Console.WriteLine("Server started:{0}.", _serverSocket.LocalEndPoint);
+        Console.WriteLine("Server started on port {0}, available interfaces to connect:", _port);
+
+        IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (IPAddress curAdd in host.AddressList)
+        {
+            Console.WriteLine(curAdd.ToString());
+        }
+
         _selector.AttachSelectable(_serverSocket, (ISubscibableSelector.ReadableHandler)HandleWrite);
         DNSResolver.Instance.AttachOnSelector(_selector);
         while (true)
@@ -41,7 +48,7 @@ public class Server : IDisposable, IWritableHandler
         }
     }
 
-    private Socket InitServerSocket(int port)
+    private static Socket InitServerSocket(int port)
     {
         Socket socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         EndPoint localEndPoint = new IPEndPoint(IPAddress.Any, port);
@@ -61,7 +68,7 @@ public class Server : IDisposable, IWritableHandler
         Socket socket = _serverSocket.Accept();
         socket.Blocking = false;
         Console.WriteLine("Connected with {0}", socket.RemoteEndPoint);
-        ISession session = new SessionImplementation(socket, _selector, _dnsResolver);
+        ISession session = new SessionImplementation(socket, _selector);
         _openedSessions.Add(session);
         session.SessionClosed += OnSessionClose;
     }

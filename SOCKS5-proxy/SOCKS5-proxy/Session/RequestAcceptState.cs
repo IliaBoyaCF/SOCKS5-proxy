@@ -23,7 +23,6 @@ internal class RequestAcceptState : SessionState
         {
             if (exception != null)
             {
-                Console.WriteLine("Closing session in Request accept state1.");
                 _session.SetClosed();
                 return;
             }
@@ -34,7 +33,6 @@ internal class RequestAcceptState : SessionState
                     {
                         if (e != null)
                         {
-                            Console.WriteLine("Closing session in Request accept state2.");
                             _session.SetClosed();
                             return;
                         }
@@ -47,7 +45,6 @@ internal class RequestAcceptState : SessionState
                     {
                         if (e != null)
                         {
-                            Console.WriteLine("Closing session in Request accept state3.");
                             _session.SetClosed();
                             return;
                         }
@@ -60,7 +57,6 @@ internal class RequestAcceptState : SessionState
                     {
                         if (e != null)
                         {
-                            Console.WriteLine("Closing session in Request accept state4.");
                             _session.SetClosed();
                             return;
                         }
@@ -69,7 +65,6 @@ internal class RequestAcceptState : SessionState
                         {
                             if (exc != null)
                             {
-                                Console.WriteLine("Closing session in Request accept state5.");
                                 _session.SetClosed();
                                 return;
                             }
@@ -91,7 +86,6 @@ internal class RequestAcceptState : SessionState
             case ClientRequest.AddressType.IPv6:
                 new NonBlockingWriter(_clientSocket, _selector,
                     new ServerReply(ServerReply.Reply.ADDRESS_TYPE_NOT_SUPPORTED, request.Address, request.Port).Serialize(), (e) => {
-                        Console.WriteLine("---------Closing session in Request accept state6.----------");
                         _session.SetClosed();
                     });
                 return;
@@ -109,7 +103,6 @@ internal class RequestAcceptState : SessionState
                 new NonBlockingWriter(_clientSocket, _selector,
                     new ServerReply(ServerReply.Reply.ADDRESS_TYPE_NOT_SUPPORTED, request.Address, request.Port).Serialize(), (e) =>
                     {
-                        Console.WriteLine("Closing session in Request accept state7.");
                         _session.SetClosed();
                     });
                 return;
@@ -118,14 +111,6 @@ internal class RequestAcceptState : SessionState
 
     private static IPAddress SelectHostIp(IList<IResourceRecord> addresses)
     {
-        foreach (IResourceRecord record in addresses)
-        {
-            foreach (byte b in record.Data)
-            {
-                Console.Write(" {0}", b);
-            }
-            Console.WriteLine();
-        }
         foreach (var address in addresses)
         {
             if (address.DataLength == 4)
@@ -138,9 +123,10 @@ internal class RequestAcceptState : SessionState
 
     private void ConnectToHost(IPAddress address, int port)
     {
-        Console.WriteLine("Request to connect to {0} : {1}", address, port);
-        _hostSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-        _hostSocket.Blocking = false;
+        _hostSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+        {
+            Blocking = false
+        };
         Task task = _hostSocket.ConnectAsync(address, port);
         _selector.AttachConnectable(task, () => { SendReply(address, port); });
     }
@@ -151,7 +137,6 @@ internal class RequestAcceptState : SessionState
         {
             new NonBlockingWriter(_clientSocket, _selector, new ServerReply(ServerReply.Reply.CONNECTION_REFUSED, address, port).Serialize(),
                 (e) => {
-                    Console.WriteLine("Closing session in Request accept state8.");
                     _session.SetClosed();
                     });
             return;
@@ -161,21 +146,11 @@ internal class RequestAcceptState : SessionState
                 {
                     if (e != null)
                     {
-                        Console.WriteLine("Closing session in Request accept state9.");
                         _session.SetClosed();
                         return;
                     }
+                    _session.OnHostConnection(_hostSocket);
                     _session.SetState(new DataTransferringState(_clientSocket, _hostSocket, _selector, _session));
                 });
-    }
-
-    public override void HandleRead(Socket readableSocket)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void HandleWrite(Socket writableSocket)
-    {
-        throw new NotImplementedException();
     }
 }
